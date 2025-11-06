@@ -2,7 +2,7 @@
  * @Author: xionghaiying
  * @Date: 2025-08-04 16:34:56
  * @LastEditors: xionghiaying 
- * @LastEditTime: 2025-11-05 10:32:54
+ * @LastEditTime: 2025-11-06 16:05:48
  * @Description: 
 -->
 <template>
@@ -11,9 +11,24 @@
       <div class="title">选择模块</div>
       <div class="line">
         <span class="line-label">ModuleID：</span>
-        <el-select class="line-input" v-model="toModule" placeholder="请选择" clearable>
-          <el-option-group v-for="group in modulesList" :key="group.label" :label="group.label">
-            <el-option v-for="item in group.options" :key="item.value" :label="item.label" :value="item.value"> </el-option>
+        <el-select
+          class="line-input"
+          v-model="toModule"
+          placeholder="请选择"
+          clearable
+        >
+          <el-option-group
+            v-for="group in modulesList"
+            :key="group.label"
+            :label="group.label"
+          >
+            <el-option
+              v-for="item in group.options"
+              :key="item.value"
+              :label="item.label"
+              :value="item.value"
+            >
+            </el-option>
           </el-option-group>
         </el-select>
       </div>
@@ -56,7 +71,9 @@
       <div class="title">entity</div>
       <div class="line">
         <el-button @click="addEntityPolyline">添加polyline</el-button>
-        <el-button @click="updateEntityProperties">修改properties属性</el-button>
+        <el-button @click="updateEntityProperties"
+          >修改properties属性</el-button
+        >
         <el-button @click="addEntityPolygon">添加polygon</el-button>
       </div>
     </div>
@@ -69,7 +86,15 @@
     <div class="panel-block">
       <div class="title">primitiveCollection</div>
       <div class="line">
-        <el-button @click="addPrimitiveCollection">addPrimitiveCollection</el-button>
+        <el-button @click="addPrimitiveCollection"
+          >addPrimitiveCollection</el-button
+        >
+      </div>
+    </div>
+    <div class="panel-block">
+      <div class="title">材质</div>
+      <div class="line">
+        <el-button @click="roadFlashing">道路闪烁</el-button>
       </div>
     </div>
     <!-- 隐藏的下载链接 -->
@@ -84,6 +109,7 @@ import { modulesList } from "../js/cesium-test.data";
 import { doEventSend } from "../../../cesium-component/src/plugin.js";
 
 // import xhytest from "../assets/json/xhy001.json";
+import roads from "../assets/json/roads.json";
 
 
 const toModule = ref();
@@ -237,9 +263,37 @@ const addPrimitiveCollection = () => {
 };
 //#endregion ------ primitiveCollection -------
 
+//#region ------ 材质 -------
+const roadFlashing = () => {
+
+  const geojsonList = roads;
+  const dataList = [];
+  geojsonList?.features.forEach((feature: any) => {
+    const lines = feature.geometry.coordinates
+    lines.forEach((line: any) => {
+      let flatPositions;
+      if (Array.isArray(line[0])) {
+        // 二维数组,需要展平
+        flatPositions = line.flat();
+      } else {
+        // 已经是一维数组
+        flatPositions = line;
+      }
+      dataList.push({
+        positions : flatPositions
+      });
+    });
+  });
+  console.log("dataList", dataList.length);
+  doEventSend("map-add-flickerLine", { dataList, color:"#5ee603ff" });
+}
+//#endregion ------ 材质 -------
+
+ //#region ------ 测量 -------
 const onMeasureCircle = () =>{
   doEventSend("measure-circle");
 }
+//#endregion ------ 测量 -------
 </script>
 
 <style lang="scss" scoped>
