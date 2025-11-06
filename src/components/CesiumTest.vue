@@ -267,7 +267,7 @@ const addPrimitiveCollection = () => {
 const roadFlashing = () => {
 
   const geojsonList = roads;
-  const dataList = [];
+  const dataList: { positions: number[] }[] = [];
   geojsonList?.features.forEach((feature: any) => {
     const lines = feature.geometry.coordinates
     lines.forEach((line: any) => {
