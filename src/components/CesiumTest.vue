@@ -2,7 +2,7 @@
  * @Author: xionghaiying
  * @Date: 2025-08-04 16:34:56
  * @LastEditors: xionghiaying 
- * @LastEditTime: 2025-11-06 16:05:48
+ * @LastEditTime: 2025-11-07 14:49:54
  * @Description: 
 -->
 <template>
@@ -95,6 +95,9 @@
       <div class="title">材质</div>
       <div class="line">
         <el-button @click="roadFlashing">道路闪烁</el-button>
+        <el-button @click="addCircleScan">圆形扫描</el-button>
+        <el-button @click="addCircleRipple">圆形涟漪</el-button>
+        <el-button @click="addCircleDiffuse">圆形扩散</el-button>
       </div>
     </div>
     <!-- 隐藏的下载链接 -->
@@ -111,11 +114,9 @@ import { doEventSend } from "../../../cesium-component/src/plugin.js";
 // import xhytest from "../assets/json/xhy001.json";
 import roads from "../assets/json/roads.json";
 
-
 const toModule = ref();
 
 const xhyTest = () => {};
-
 
 const onTest = () => {
   // doEventSend("map-test", { a: 1, b: "2" });
@@ -128,7 +129,9 @@ const getSenceImage = () => {
       if (res.success) {
         console.log("22222", res.data);
         // 创建下载链接
-        const link = document.getElementById("download-link") as HTMLAnchorElement;
+        const link = document.getElementById(
+          "download-link"
+        ) as HTMLAnchorElement;
         if (link) {
           link.href = res.data;
           link.download = "map.png";
@@ -228,7 +231,11 @@ const updateEntityProperties = () => {
   let data = {
     type: 2,
   };
-  doEventSend("entity-properties-update", { id: "xhy001", sourceName: "basic_drawing", changeObj: data });
+  doEventSend("entity-properties-update", {
+    id: "xhy001",
+    sourceName: "basic_drawing",
+    changeObj: data,
+  });
 };
 
 const addEntityPolygon = () => {
@@ -265,11 +272,10 @@ const addPrimitiveCollection = () => {
 
 //#region ------ 材质 -------
 const roadFlashing = () => {
-
   const geojsonList = roads;
   const dataList: { positions: number[] }[] = [];
   geojsonList?.features.forEach((feature: any) => {
-    const lines = feature.geometry.coordinates
+    const lines = feature.geometry.coordinates;
     lines.forEach((line: any) => {
       let flatPositions;
       if (Array.isArray(line[0])) {
@@ -280,19 +286,90 @@ const roadFlashing = () => {
         flatPositions = line;
       }
       dataList.push({
-        positions : flatPositions
+        positions: flatPositions,
       });
     });
   });
   console.log("dataList", dataList.length);
-  doEventSend("map-add-flickerLine", { dataList, color:"#5ee603ff" });
-}
+  doEventSend("map-add-flickerLine", { dataList, color: "#5ee603ff" });
+};
+
+// /**
+//  * 添加圆形雷达扫描特效
+//  * @param {Object} options - 扫描配置参数
+//  * @param {number} options.lon - 经度
+//  * @param {number} options.lat - 纬度
+//  * @param {number} [options.radius=400] - 扫描半径(米)
+//  * @param {string} [options.color="#C345F5"] - 扫描颜色(CSS颜色字符串或rgba格式)
+//  * @param {number} [options.duration=3000] - 扫描周期时长(毫秒)
+//  * @returns {PostProcessStage} 返回创建的后处理阶段对象
+//  */
+const addCircleScan = () => {
+  const radius = 5000; // 半径，单位：米
+  doEventSend("map-add-circleScan", {
+    lon: 112.95,
+    lat: 28.23,
+    radius,
+    color: "#C345F5",
+    duration: 3000,
+  });
+};
+
+// /**
+//  * 添加圆形扩散特效
+//  * @param {Object} options - 扩散配置参数
+//  * @param {number} options.lon - 经度
+//  * @param {number} options.lat - 纬度
+//  * @param {number} [options.semiMinorAxis=400] - 椭圆短半轴(米)
+//  * @param {number} [options.semiMajorAxis=400] - 椭圆长半轴(米)
+//  * @param {string} [options.color="#FEDE6E"] - 扩散颜色(CSS颜色字符串)
+//  * @param {number} [options.speed=10.0] - 扩散速度
+//  * @returns {Entity} 返回创建的实体对象
+//  */
+const addCircleDiffuse = () => {
+  const center = { longitude: 112.94, latitude: 28.20, altitude: 0 };
+  doEventSend("map-add-circleDiffuse", {
+    lon: center.longitude,
+    lat: center.latitude,
+    semiMinorAxis: 400,
+    semiMajorAxis: 400,
+    color: "#3366ff",
+    speed: 10.0,
+  });
+};
+
+// /**
+//  * 添加圆形波纹特效
+//  * @param {Object} options - 波纹配置参数
+//  * @param {number} options.lon - 经度
+//  * @param {number} options.lat - 纬度
+//  * @param {number} [options.semiMinorAxis=300] - 椭圆短半轴(米)
+//  * @param {number} [options.semiMajorAxis=300] - 椭圆长半轴(米)
+//  * @param {string} [options.color="#FEDE6E"] - 波纹颜色(CSS颜色字符串)
+//  * @param {number} [options.speed=10.0] - 波纹速度
+//  * @param {number} [options.count=4] - 波纹数量
+//  * @param {number} [options.gradient=0.2] - 波纹渐变系数
+//  * @returns {Entity} 返回创建的实体对象
+//  */
+const addCircleRipple = () => {
+  const center = { longitude: 112.95, latitude: 28.23, altitude: 0 };
+  doEventSend("map-add-circleRipple", {
+    lon: center.longitude,
+    lat: center.latitude,
+    semiMinorAxis: 300,
+    semiMajorAxis: 300,
+    color: "#FEDE6E",
+    speed: 10.0,
+    count: 4,
+    gradient: 0.2,
+  });
+};
 //#endregion ------ 材质 -------
 
- //#region ------ 测量 -------
-const onMeasureCircle = () =>{
+//#region ------ 测量 -------
+const onMeasureCircle = () => {
   doEventSend("measure-circle");
-}
+};
 //#endregion ------ 测量 -------
 </script>
 
